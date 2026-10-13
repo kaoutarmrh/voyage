@@ -1,26 +1,20 @@
 import Link from "next/link";
-import { Destination, formatPrix } from "@/data/destinations";
-
-export function visuel(d: Destination) {
-  const [a, b, c] = d.couleurs;
-  return `radial-gradient(circle at 78% 22%, ${c}cc, transparent 40%), linear-gradient(160deg, ${a}, ${b})`;
-}
+import { Destination, formatPrix, imageDe } from "@/data/destinations";
 
 export default function DestinationCard({ d }: { d: Destination }) {
   return (
-    <Link href={`/destinations/${d.slug}`} className="card">
-      <div className="card-visual" style={{ background: visuel(d) }}>
-        <span className="tag">{d.categorie}</span>
-        <span className="pays">{d.pays}</span>
+    <Link href={`/destinations/${d.slug}`} className="dcard">
+      <img src={imageDe(d)} alt={`${d.nom}, ${d.pays}`} loading="lazy" />
+      <div className="dcard-top">
+        <span className="pill">{d.categorie}</span>
+        <span className="pill code">{d.iata}</span>
       </div>
-      <div className="card-body">
+      <div className="dcard-body">
+        <span className="country">{d.pays}</span>
         <h3>{d.nom}</h3>
-        <p>{d.accroche}</p>
-        <div className="card-meta">
-          <span>{d.duree} jours</span>
-          <span>
-            dès <strong>{formatPrix(d.prix)}</strong>
-          </span>
+        <div className="meta">
+          <span>{d.duree} jours · <span className="star">★</span> {d.note.toFixed(1)}</span>
+          <span>dès <strong>{formatPrix(d.prix)}</strong></span>
         </div>
       </div>
     </Link>

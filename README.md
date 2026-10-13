@@ -1,6 +1,6 @@
 # Horizons Voyages — site Next.js
 
-Site vitrine d'agence de voyages en français (Next.js 15, App Router, TypeScript, CSS pur).
+Site d'agence de voyages en français : Next.js 15 (App Router), TypeScript, CSS sans framework.
 
 ## Démarrer
 
@@ -13,16 +13,22 @@ Puis ouvrir http://localhost:3000
 
 ## Pages
 
-- `/` — accueil (hero, voyages à la une, atouts, témoignages, appel à l'action)
-- `/destinations` — catalogue avec filtres par catégorie et tri
-- `/destinations/[slug]` — fiche voyage (programme jour par jour, inclus, devis)
-- `/a-propos` — présentation de l'agence
-- `/contact` — formulaire de devis (pré-rempli via `?voyage=slug`)
-- `/api/contact` — route API qui valide la demande
+- `/` : accueil (photo plein écran, recherche, voyages coups de cœur, étapes, avis, devis)
+- `/destinations` : catalogue filtrable (Culture, Plage, Aventure, Luxe) et triable
+- `/destinations/[slug]` : fiche voyage (programme jour par jour, carte d'embarquement avec prix)
+- `/a-propos` : l'agence, les engagements, l'équipe
+- `/contact` : formulaire de devis (pré-rempli depuis une fiche via `?voyage=slug`)
+- `/api/contact` : validation de la demande
 
 ## Personnaliser
 
-- **Voyages** : modifier `data/destinations.ts` (ajouter un objet = nouvelle page générée).
-- **Couleurs / typo** : variables CSS en haut de `app/globals.css`.
-- **Envoi des e-mails** : brancher Resend, Nodemailer ou votre CRM dans `app/api/contact/route.ts`.
-- **Photos** : les visuels sont des dégradés ; pour de vraies photos, ajouter un champ `image` aux destinations et utiliser `next/image`.
+- **Voyages** : `data/destinations.json` (un objet = une page générée automatiquement).
+- **Photos** : `public/images/` (même nom que le champ `image`).
+- **Couleurs, polices** : variables en haut de `app/globals.css`.
+- **Coordonnées et avis** : ce sont des exemples, à remplacer par les vôtres.
+- **Envoi des demandes** : brancher Resend, Nodemailer ou un CRM dans `app/api/contact/route.ts`.
+
+## Crédits photos
+
+Photos issues de banques libres (Pexels, Unsplash) via un projet open source. Avant une mise en ligne
+commerciale, vérifiez la licence de chaque image ou remplacez-les par vos propres photos.

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { destinations, getDestination, formatPrix } from "@/data/destinations";
-import { visuel } from "@/components/DestinationCard";
+import { destinations, getDestination, formatPrix, imageDe } from "@/data/destinations";
 import DestinationCard from "@/components/DestinationCard";
+import { Plane } from "@/components/Icons";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -12,77 +12,92 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const d = getDestination(slug);
-  if (!d) return {};
-  return { title: `${d.nom} — ${d.pays}`, description: d.accroche };
+  const d = getDestination((await params).slug);
+  return d ? { title: `${d.nom} — ${d.pays}`, description: d.accroche } : {};
 }
 
 export default async function DestinationPage({ params }: Props) {
-  const { slug } = await params;
-  const d = getDestination(slug);
+  const d = getDestination((await params).slug);
   if (!d) notFound();
-
-  const autres = destinations.filter((x) => x.slug !== d.slug).slice(0, 3);
+  const autres = destinations.filter((x) => x.slug !== d.slug && x.categorie === d.categorie)
+    .concat(destinations.filter((x) => x.slug !== d.slug && x.categorie !== d.categorie))
+    .slice(0, 4);
 
   return (
     <>
-      <section className="detail-hero" style={{ background: visuel(d) }}>
+      <section className="page-hero">
+        <img src={imageDe(d)} alt={`${d.nom}, ${d.pays}`} />
         <div className="container">
-          <Link href="/destinations" style={{ opacity: 0.85, fontSize: ".9rem" }}>← Toutes les destinations</Link>
-          <span className="eyebrow" style={{ color: "#fff", marginTop: 20 }}>{d.pays} · {d.categorie}</span>
+          <nav className="crumbs" aria-label="Fil d'Ariane">
+            <Link href="/">Accueil</Link><span>/</span><Link href="/destinations">Destinations</Link><span>/</span><span>{d.pays}</span>
+          </nav>
+          <span className="eyebrow">{d.pays} · {d.region}</span>
           <h1>{d.nom}</h1>
-          <div className="meta">
-            <span>🕑 {d.duree} jours</span>
-            <span>☀ Meilleure période : {d.saison}</span>
-            <span>€ dès {formatPrix(d.prix)} / pers.</span>
+          <p className="lead">{d.accroche}</p>
+          <div className="facts">
+            <span>{d.duree} jours</span>
+            <span>★ {d.note.toFixed(1)} · {d.avis} avis</span>
+            <span>Idéal : {d.saison}</span>
           </div>
         </div>
       </section>
 
       <section className="section">
         <div className="container detail">
-          <div>
-            <h2>Le voyage</h2>
-            <p className="lead">{d.description}</p>
-
-            <h3 style={{ marginTop: 40 }}>Les temps forts</h3>
-            <ul className="highlights">
-              {d.points.map((p) => <li key={p}>{p}</li>)}
-            </ul>
-
-            <h2>Programme</h2>
-            <ol className="timeline">
-              {d.programme.map((e) => (
-                <li key={e.jour}>
-                  <span className="jour">{e.jour}</span>
-                  <h3>{e.titre}</h3>
-                  <p style={{ color: "var(--muted)" }}>{e.texte}</p>
-                </li>
-              ))}
-            </ol>
+          <div className="detail-main">
+            <section>
+              <span className="eyebrow">Le voyage</span>
+              <p className="lead" style={{ color: "var(--ink)", fontSize: "1.2rem" }}>{d.description}</p>
+            </section>
+            <section>
+              <h2>Les temps forts</h2>
+              <ul className="highlights">{d.points.map((p) => <li key={p}>{p}</li>)}</ul>
+            </section>
+            <section>
+              <h2>Programme jour par jour</h2>
+              <ol className="timeline">
+                {d.programme.map((e) => (
+                  <li key={e.jour}>
+                    <span className="jour">{e.jour}</span>
+                    <div><h3>{e.titre}</h3><p>{e.texte}</p></div>
+                  </li>
+                ))}
+              </ol>
+            </section>
           </div>
 
-          <aside className="aside">
-            <span style={{ color: "var(--muted)", fontSize: ".9rem" }}>À partir de</span>
-            <div className="prix">{formatPrix(d.prix)}</div>
-            <span style={{ color: "var(--muted)", fontSize: ".9rem" }}>par personne, hors vols internationaux</span>
-            <h4 style={{ margin: "24px 0 8px" }}>Inclus</h4>
-            <ul>
-              {d.inclus.map((i) => <li key={i}>{i}</li>)}
-            </ul>
-            <Link href={`/contact?voyage=${d.slug}`} className="btn btn-primary">Demander un devis</Link>
-            <a href="tel:+33100000000" className="btn btn-ghost">Appeler un conseiller</a>
+          <aside className="boarding" aria-label="Résumé et réservation">
+            <div className="boarding-head">
+              <div className="route">
+                <span><small>Départ</small>CDG</span>
+                <Plane size={22} />
+                <span><small>Arrivée</small>{d.iata}</span>
+              </div>
+            </div>
+            <div className="boarding-body">
+              <div className="boarding-grid">
+                <div><small>Destination</small><span>{d.ville}</span></div>
+                <div><small>Durée</small><span>{d.duree} jours</span></div>
+                <div><small>Type</small><span>{d.categorie}</span></div>
+                <div><small>Saison</small><span>{d.saison.split(",")[0]}</span></div>
+              </div>
+              <div className="tear" />
+              <div className="boarding-price">
+                <div><small>À partir de</small><strong>{formatPrix(d.prix)}</strong></div>
+                <span className="count">par personne<br />hors vols</span>
+              </div>
+              <ul>{d.inclus.map((i) => <li key={i}>{i}</li>)}</ul>
+              <Link href={`/contact?voyage=${d.slug}`} className="btn btn-sun">Demander un devis</Link>
+              <a href="tel:+33144000000" className="btn btn-line">01 44 00 00 00</a>
+            </div>
           </aside>
         </div>
       </section>
 
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="container">
-          <h2>Vous aimerez aussi</h2>
-          <div className="grid" style={{ marginTop: 32 }}>
-            {autres.map((x) => <DestinationCard key={x.slug} d={x} />)}
-          </div>
+          <div className="section-head"><div><span className="eyebrow">Envie d&apos;ailleurs</span><h2>Vous aimerez aussi</h2></div></div>
+          <div className="dest-grid">{autres.map((x) => <DestinationCard key={x.slug} d={x} />)}</div>
         </div>
       </section>
     </>
